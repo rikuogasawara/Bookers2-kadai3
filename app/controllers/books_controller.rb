@@ -1,59 +1,141 @@
 class BooksController < ApplicationController
   before_action :is_matching_login_user, only: [:edit, :update]
 
-  def index
-    @book = Book.new
-    @books = Book.all
+ def index
+
+    user_info_new_book_current_user
+    @books = book_all
+
   end
 
   def create
+
+    # データを受け取り新規登録するためのインスタンス作成
     @book = Book.new(book_params)
     @book.user_id = current_user.id
+
     if @book.save
-      flash[:notice] = "successfully"
+
+      notice("You have created book successfully.")
+
+      path_jugde(controller_path, action_name)
+
       redirect_to book_path(@book.id)
+
     else
-      @books = Book.all
-      render :index
+
+    @user = user_find_param(current_user.id)
+    @books = book_all
+    render :index
+
     end
+
   end
 
   def show
-    @book = Book.new
-    @books = Book.find(params[:id])
+
+    # user_info_new_book_show
+    @book2 = book_find
+    @book = book_new
+    @user = User.find(@book2.user.id)
+
+
   end
 
   def edit
-    @book = Book.find(params[:id])
+
+    @book = book_find
+
   end
 
   def update
-    @book = Book.find(params[:id])
+
+    @book = book_find
+    book_id = @book.id
+
     if @book.update(book_params)
-      flash[:notice] = "successfully"
-      redirect_to book_path(@book.id)
+
+      redirect_book_path("You have updated book successfully.")
+      redirect_to book_path(book_id)
+
     else
+
       render :edit
+
     end
+
   end
 
   def destroy
-    @book = Book.find(params[:id])
-    @book.destroy
+
+    # booksテーブルのidをキーにして、select。（1件取得）。
+    book = book_find
+    # 取得したデータを削除
+    book.destroy
+    # 詳細画面へリダイレクト
     redirect_to '/books'
+
+
+
   end
 
   private
 
+  # ストロングパラメータ
   def book_params
-    params.require(:book).permit(:title, :body)
+
+    params.require(:book).permit(:title,:body)
+
   end
 
-  def is_matching_login_user
-    @book = Book.find(params[:id])
-    unless @book.user.id == current_user.id
-      redirect_to books_path
-    end
+  # bookモデルのidでselect(1行)
+  def book_find_book_id
+
+    Book.find(@book.id)
+
   end
+
+  # books/show画面遷移<br> word:noticeメッセージ
+  def redirect_book_path(word)
+
+    notice(word)
+    user_info_new_book_current_user
+    @book2 = book_find
+
+  end
+
+  # controller_path,action_nameで判定するインスタンスメソッド設定判定
+  def path_jugde(controller_path,action_name)
+
+    if (controller_path == 'users')
+
+      if (action_name == 'index')
+        user_info_new_book_current_user
+        @book2 = book_find_book_id
+
+      elsif (action_name == 'show')
+
+        user_info_new_book_current_user
+        @book2 = book_find_book_id
+
+      end
+
+    elsif (controller_path == 'books')
+
+      if (action_name == 'index')
+
+        user_info_new_book_current_user
+        @book2 = book_find
+
+      elsif (action_name == 'show')
+        user_info_new_book_current_user
+        @book2 = book_find
+
+      end
+
+    end
+
+  end
+
 
 end

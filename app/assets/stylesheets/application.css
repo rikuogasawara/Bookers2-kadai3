@@ -13,3 +13,7 @@
  *= require_tree .
  *= require_self
  */
+.btn-block {
+    display: block;
+    width: 100%;
+}
